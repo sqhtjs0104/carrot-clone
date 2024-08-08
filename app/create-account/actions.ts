@@ -39,6 +39,7 @@ export async function createAccount(prevState: any, formData: FormData){
   }
 
   const result = formSchema.safeParse(data);
+  
   if (!result.success) {
     return result.error.flatten();
   } else {
