@@ -19,7 +19,7 @@ const checkUniqueUsername = async (username: string) => {
     },
   });
   
-  return !Boolean(user);
+  return Boolean(user);
 }
 const checkUniqueEmail = async (email: string) => {
   const user = await db.user.findUnique({
@@ -31,36 +31,57 @@ const checkUniqueEmail = async (email: string) => {
     },
   });
   
-  return !Boolean(user);
+  return Boolean(user);
 }
 
-const formSchema = z.object({
-  username: z
-    .string({
-      invalid_type_error: "Must only string",
-      required_error: "Required"
-    })
-    .min(USERNAME_MIN_LENGTH, "Too short")
-    .toLowerCase()
-    .trim()
-    // .transform((username) => `${username}🔥`)
-    .refine(checkUsername, "Not allowed name")
-    .refine(checkUniqueUsername, "Already exists"),
-  email: z
-    .string()
-    .email()
-    .refine(checkUniqueEmail, "Already exists"),
-  password: z
-    .string()
-    .min(PASSWORD_MIN_LENGTH),
-    // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
-  confirm_password: z
-    .string()
-    .min(PASSWORD_MIN_LENGTH),
-}).refine(checkPassword, {
-  message: "Check both password",
-  path: ["confirm_password"],
-});
+const formSchema = z
+  .object({
+    username: z
+      .string({
+        invalid_type_error: "Must only string",
+        required_error: "Required"
+      })
+      .min(USERNAME_MIN_LENGTH, "Too short")
+      .toLowerCase()
+      .trim()
+      // .transform((username) => `${username}🔥`)
+      .refine(checkUsername, "Not allowed name"),
+    email: z
+      .string()
+      .email(),
+    password: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH),
+      // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+    confirm_password: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH),
+  })
+  .superRefine(async ({ username, email, password }, ctx) => {
+    if (await checkUniqueUsername(username)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "This username is already taken",
+        path: ["username"],
+        fatal: true,
+      });
+
+      return z.NEVER;
+    } else if (await checkUniqueEmail(email)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "This email address is already taken",
+        path: ["email"],
+        fatal: true,
+      });
+
+      return z.NEVER;
+    }
+  })
+  .refine(checkPassword, {
+    message: "Both passwords should be the same",
+    path: ["confirm_password"],
+  });
 
 export async function createAccount(prevState: any, formData: FormData){
   const data = {
