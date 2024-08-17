@@ -1,3 +1,5 @@
+"use client";
+
 import { InitialProducts } from "@/app/(tabs)/products/page";
 import ListProduct from "./list-product"
 import { useEffect, useRef, useState } from "react";
@@ -10,7 +12,7 @@ export default function ProductList({
 }) {
   const [products, setProducts] = useState(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
 
   const trigger = useRef<HTMLSpanElement>(null);
@@ -59,7 +61,7 @@ export default function ProductList({
           <span
             ref={trigger}
             style={{
-              marginTop: `${page + 1 * 900}vh`,
+              marginTop: `${page + 1 * 600}vh`,
             }}
             className="mb-96 text-sm font-semibold bg-orange-500 w-fit mx-auto px-3 py-2 rounded-md hover:opacity-90 active:scale-95"
           >
