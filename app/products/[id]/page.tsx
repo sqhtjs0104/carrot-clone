@@ -6,6 +6,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserIcon } from "@heroicons/react/24/solid";
 
+export async function generateMetadata({
+  params
+}: {
+  params: { id: string; };
+}) {
+  const product = await getProduct(Number(params.id));
+
+  return {
+    title: product?.title,
+  }
+}
+
 async function getIsOwner(userId: number) {
   const session = await getSession();
   if (session.id) return session.id === userId;
